@@ -15,6 +15,8 @@ else:
 nIW = []
 #iW = in word.
 iW = []
+#Yellow Word solution
+yellowWords = []
     
 #Function to return available words.
 def avWords(word):
@@ -68,6 +70,7 @@ def guess(g):
     if input("[R]estart, [C]ontinue\n> ").lower()[0] == "r":
         nIW.clear()
         iW.clear()
+        yellowWords.clear()
         solve()
     else:
         #They enter the colors for example: ggybb
@@ -85,6 +88,7 @@ def guess(g):
             elif wordResult[i] == "y":
                 guessReturn += "_"
                 iW.append(g[i])
+                yellowWords.append([g[i], i])
             #If the letter is neither green nor yellow, put an unknown in the
             #computers understanding of the word, and put the letter in the
             #list of letters not in the word.
@@ -112,6 +116,12 @@ def narrow(wordList):
         for char in iW:
             if char not in w:
                 thisWord = False
+        for char in range(len(w)):
+            for yW in yellowWords:
+                if yW[1] == char:
+                    if w[char] == yW[0]:
+                        thisWord = False
+            
         if thisWord:
             #if diag:
                 #print("%s is valid." % w)
@@ -164,3 +174,4 @@ solve()
             
             
     
+
