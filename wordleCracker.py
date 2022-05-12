@@ -3,6 +3,26 @@ import random, time
 with open("wordleLis.txt", "r") as wordList:
     words = wordList.readlines()
 
+"""
+Consider using a Settings/Options object here for two reasons: 
+   1. If you wanted to add more settings in the future (say a variable `word_file` letting a user 
+    pick where the wordleLis.txt file is stored), you don't have to rewrite all your functions to
+     pass around both `diag` and `word_file`. You can pass around the object itself.
+   2. Engineering is a team sport. If you use an Options object, another engineer will be able to
+    see `if options.diag` and understand at the very least it's a user defined option.
+
+It would look something like this:
+```
+from dataclasses import dataclass
+
+@dataclass
+class Options:
+    diag: bool 
+    ... etc.
+```
+See https://docs.python.org/3/library/dataclasses.html for more details.
+"""
+
 #Option to print things as it goes (cool to watch, and useful for debugging)
 diag = input("Display extra information? (Y/N)\n> ").lower()[0]
 if diag == "y":
@@ -10,6 +30,16 @@ if diag == "y":
 else:
     diag = False
 
+"""
+1. Consider turning these into a class. A wordle attempt is like an object. 
+2. Also, short variable names like this are generally discouraged (except in Golang!). Ideally a line 
+of code is as self-explanatory as possible. If an engineer sees, or you a few months from  now
+(trust me, you always think you'll understand your code more than you do a few months later)
+ `for f in iW:` they may have an idea what that means, and perhaps they can just search for `iW` 
+ and see your comment, but a well name variable is like having the comment on every line. 
+ For example, `for l in letters_in_solution` is nearly impossible to confuse.
+
+"""
 #Variables
 #nIW = not in word, and stores letters not in word.
 nIW = []
@@ -17,7 +47,22 @@ nIW = []
 iW = []
 #Yellow Word solution
 yellowWords = []
-    
+
+"""
+Like variable names, function names can act as a comment in themselves. A good function name 
+describes what it does (like a verb, compared to a noun). If I saw in the code  
+   `for w in avWords("h_l__")` I would know what the input is and somehow it returns a list, but 
+   what it does is still unclear. Consider:
+   ```
+        remaining_words = get_words_satisfying("h_l__")
+        for w in remaining_words
+   ```
+It tells me:
+  1. A list (or technically an Iterable) of words are being returned.
+  2. Those words return "satisfy" the input "h_l__". In this case "satisfy just means h and l are 
+     in the right slots, not that yellowWords, nIW ot iW are considered.
+  3. Words that satisfy "h_l__" are considered remaining.
+"""    
 #Function to return available words.
 def avWords(word):
     #Imput type: h_l__
@@ -26,6 +71,19 @@ def avWords(word):
     for i in words:
         #To improve efficiency, check the first letter, because if the first
         #letter is not the same, than the word can't be.
+        """ Fun improvement: Regex. 
+        import re
+
+        # In regex, instead of a '_', a '.' says "I expect a single character here". So "h_l__" --> "h.l..$" says, 
+        # start with a "h", any character, "l", two more characters, then stop (the "$" means no more characters are allowed)
+        pattern = re.compile(word.replace("_", ".") + "$")
+
+        aW = []
+        for i in words:
+            if pattern.match(word):
+                ...
+
+        """
         if i[0] == word[0] or word[0] == "_":
             if i[1] == word[1] or word[1] == "_":
                 if i[2] == word[2] or word[2] == "_":
@@ -63,6 +121,18 @@ def guess(g):
         return guessReturn
 '''
 
+"""
+This is a better function name. But what is 'g'? Also this is a good example where you could do two more things:
+    1. Function docstrings: They provide more details about a function (e.g what the variables are, 
+       are there any constraints on them (e.g. cannot be "" string)). See some good examples here,
+       https://the-examples-book.com/book/python/docstrings-and-comments#docstrings. In this case, 
+       consider documenting what is the format of the string 'g'.
+    2. Typing: These are annotations that tell the engineer (not python itself), what is the type 
+        of the inputs and outputs. For example:
+          `def guess(g: str) -> List[str]:`
+        Without diving into the code and looking around, someone can immediately see what we 
+        expect, and what is returned.
+"""
 #Function for allowing the user to tell the bot what color the letters are.
 def guess(g):
     guessReturn = ""
@@ -101,10 +171,26 @@ def guess(g):
         return guessReturn
                 
             
-
+"""
+Mainly what I said above. 
+"""
 def narrow(wordList):
     clean = []
     for w in wordList:
+        """
+        When we have to use a temporary return variable (in this case `thisWord`), it's a good 
+        candidate to extract it to a new function. That way we can return earlier, avoiding running
+        unnecessary logic, and it makes it cleaner. E.g:
+        ```
+        for char in nIW:
+            if word_is_not_incorrect(w):
+                clean.append(w)
+        
+        
+        def word_is_not_incorrect(w: str) -> bool:
+            ....
+        ```
+        """
         thisWord = True
         #If ANY of the characters that are not in the word are present in the
         #word passed into the function, remove the word as it cannot be it
@@ -133,6 +219,9 @@ def narrow(wordList):
 
 def solve():
     #Find potential words given a starting word.
+    """
+    Why are you making me guess "crane" for my first turn :( 
+    """
     potWords = narrow(avWords(guess("crane")))
 
     if True:
@@ -155,7 +244,7 @@ def solve():
                 #Sleep a second to impress people watching (even though it takes
                 #mere milliseconds)
                 if diag:
-                    time.sleep(1)
+                    time.sleep(1) ## Another candidate to be included in an Options object. How long to sleep for.
                 #Pick a random word from the potential words.
                 myGuess = actualPot[random.randint(0, len(actualPot)-1)]
                 if diag:
@@ -164,9 +253,38 @@ def solve():
                 #narrowing the selection.
                 potWords = narrow(avWords(guess(myGuess)))
             except:
+                """
+                We shouldn't use an exception for an expected case. 
+                Also, it's always good practice to at least log out the exception. Why? Well there
+                will be one day, perhaps long from now, where your code breaks for a reason that
+                is new or not expected. And on that day, you will want to know what the exception 
+                was. Trust me.
+                ```
+                try:
+                    ...
+                except Exception as e:
+                    print(repr(e)) # Tell me the exception type and a message.
+                    ... 
+                ```
+                Side note: Try not to catch Exception, but rather, only catch specific exceptions, e.g. ZeroDivisionError. 
+                """
                 print("DONE")
                 break
 
+"""
+Do the following:
+```
+if __name__ == "__main__":
+    solve():
+``` 
+Why? Well you only want to run `solve()` when a user runs `python wordleCracker.py` (that's what 
+this if statement is checking). In the future, perhaps you want to reuse some of the code here.
+ If you try importing from this file without it, it will also run solve().
+```
+from wordleCracker import solve # this would runs solve() too !!!
+```
+
+"""
 solve()
     
     
