@@ -26,4 +26,4 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Test with unittest
       run: |
-        python -m unittest wordleCracker.py
+        python -m unittest discover --pattern=*.py
