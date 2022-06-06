@@ -27,3 +27,4 @@ jobs:
     - name: Test with unittest
       run: |
         python -m unittest discover --pattern=*.py
+        python -m unittest agents/HChapWordleAgent.py
