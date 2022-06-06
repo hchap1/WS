@@ -26,8 +26,8 @@ class HChapWordleAgent:
         candidates = self.find_compatible_words()
         return candidates[random.randint(0, len(candidates)-1)]
 
-    def win(self) -> None:
-        print("##### Agent won! #####")
+    def win(self, attempts_remaining: int) -> None:
+        print(f"WON WITH {attempts_remaining} REMAINING ATTEMPTS!")
 
     def process_guess(self, guess_word: str, colour_code: str = None) -> list[str]:
         word_return = ""
@@ -95,7 +95,7 @@ class HChapWordleAgent:
                 if word_is_compatible:
                     potential_words.append(word)
         return potential_words
-        
+
 
 class Test(unittest.TestCase):
     def test_agent(self):

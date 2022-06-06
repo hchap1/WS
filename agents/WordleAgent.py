@@ -9,5 +9,5 @@ class WordleAgent:
     def next_word(self, last_guess: str, feedback: str) -> str:
         pass
 
-    def win(self) -> None:
+    def win(self, remaining_attempts: int) -> None:
         pass

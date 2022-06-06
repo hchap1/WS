@@ -59,7 +59,7 @@ class Game:
             print(f"[!] '{result[1]}' ({result[0]} remain)")
 
             if result[1] == "ggggg":
-                print(f"WON WITH {result[0]} REMAINING ATTEMPTS!")
+                agent.win(result[0])
                 break
 
 
